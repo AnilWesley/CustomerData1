@@ -1,6 +1,7 @@
-package com.example.customerdata1;
+package com.example.customerdata1.activity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
@@ -37,6 +39,14 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.customerdata1.adapter.NameAdapter;
+import com.example.customerdata1.R;
+import com.example.customerdata1.RecyclerItemClickListener;
+import com.example.customerdata1.adapter.NameAdapter1;
+import com.example.customerdata1.database.DatabaseHelper;
+import com.example.customerdata1.model.Note;
+import com.example.customerdata1.model.Product;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -48,22 +58,23 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public class MainActivity1 extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity {
 
 
     RecyclerView recyclerView;
     FileOutputStream outputStream;
 
-    NameAdapter1 nameAdapter1;
-    List<NameDetails1> list;
+    NameAdapter1 nameAdapter;
+
     TextView items,grandtotal;
     FloatingActionButton floatingActionButton;
     TextView textView;
     String Name,Number;
     Button addData;
 
-
-
+    private DatabaseHelper db;
+    private List<Note> notesList = new ArrayList<>();
+    private List<Note> notesList1 = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,27 +92,37 @@ public class MainActivity1 extends AppCompatActivity {
 
 
 
+        db = new DatabaseHelper(this);
+        toggleEmptyNotes();
+        notesList.addAll(db.getAllNotes());
+        notesList1.addAll(db.getAllNotes1());
+
+        if (db.getNotesCount1() > 0) {
+            grandtotal.setText("Grand Total : "+notesList1.get(0).getGrand_total());
+            items.setText("Total Items : "+notesList1.get(0).getSize());
+        }else {
+            grandtotal.setText("Grand Total : ");
+            items.setText("Total Items : ");
+        }
+
+
+
 
         isStoragePermissionGranted();
 
         final StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
 
-        list = new ArrayList<NameDetails1>();
 
 
-        nameAdapter1 = new NameAdapter1(this, list);
+
+        nameAdapter = new NameAdapter1(this, notesList);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),DividerItemDecoration.VERTICAL);
         recyclerView.addItemDecoration(dividerItemDecoration);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(nameAdapter1);
-        nameAdapter1.SetOnItemClickListener(new NameAdapter1.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
+        recyclerView.setAdapter(nameAdapter);
 
-                Toast.makeText(MainActivity1.this, ""+position, Toast.LENGTH_SHORT).show();
-            }
-        });
+
 
 
         Bundle bundle = getIntent().getExtras();
@@ -148,6 +169,7 @@ public class MainActivity1 extends AppCompatActivity {
         });
         editTextPrice.addTextChangedListener(new TextWatcher() {
 
+            @SuppressLint("SetTextI18n")
             @Override
             public void onTextChanged(CharSequence cs, int arg1, int arg2, int arg3) {
 
@@ -195,14 +217,29 @@ public class MainActivity1 extends AppCompatActivity {
 
                 if(TextUtils.isEmpty(name) || TextUtils.isEmpty(quantity) || TextUtils.isEmpty(price2)|| TextUtils.isEmpty(price)) {
 
-                    Toast.makeText(MainActivity1.this, "Enter Details", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(HomeActivity.this, "Enter Details", Toast.LENGTH_SHORT).show();
 
 
                 }else {
-                    NameDetails1 nameDetails1 = new NameDetails1(name, quantity,price2, price);
-                    list.add(nameDetails1);
+                   /* Product nameDetails1 = new Product(name, quantity,price2, price);
+                    list.add(nameDetails1);*/
 
-                    nameAdapter1.notifyDataSetChanged();
+                    long id = db.insertNote(name,quantity,price2,price);
+
+                    // get the newly inserted note from db
+                    Note n = db.getNote(id);
+
+                    if (n != null) {
+                        // adding new note to array list at 0 position
+                        notesList.add(0, n);
+                        toggleEmptyNotes();
+                        // refreshing the list
+                        nameAdapter.notifyDataSetChanged();
+
+
+                    }
+
+                    nameAdapter.notifyDataSetChanged();
                     editTextName.setText("");
                     editTextQuantity.setText("");
                     editTextPrice.setText("");
@@ -214,30 +251,38 @@ public class MainActivity1 extends AppCompatActivity {
 
                     inputManager.hideSoftInputFromWindow(Objects.requireNonNull(getCurrentFocus()).getWindowToken(),
                             InputMethodManager.HIDE_NOT_ALWAYS);
+
+
+
                 }
 
 
-
-
-                if (list.size()>0)
-                {
-                    textView.setVisibility(View.GONE);
-                    floatingActionButton.setEnabled(true);
-
-                }
 
                 float totalPrice2 = 0;
-                int size1 = list.size();
-                items.setText("Total Items : "+size1);
+                String size1 = (String.valueOf(notesList.size()));
 
-                for (int i = 0; i<list.size(); i++)
+
+
+
+                for (int i = 0; i<notesList.size(); i++)
                 {
-                    totalPrice2 += Float.parseFloat(list.get(i).getTotalPrice());
+                    totalPrice2 += Float.parseFloat(notesList.get(i).getProduct_total_price());
+
 
                     grandtotal.setText("Grand Total : "+totalPrice2);
+
+
+
+
                 }
 
 
+                String tp= String.valueOf(totalPrice2);
+                long id= db.insertDetails(size1,tp);
+                // get the newly inserted note from db
+                Note n = db.getNote1(id);
+                grandtotal.setText("Grand Total : "+n.getGrand_total());
+                items.setText("Total Items : "+n.getSize());
 
             }
         });
@@ -245,7 +290,7 @@ public class MainActivity1 extends AppCompatActivity {
 
 
         recyclerView.addOnItemTouchListener(
-                new RecyclerItemClickListener(MainActivity1.this, recyclerView ,new RecyclerItemClickListener.OnItemClickListener() {
+                new RecyclerItemClickListener(HomeActivity.this, recyclerView ,new RecyclerItemClickListener.OnItemClickListener() {
                     @Override public void onItemClick(View view, int position) {
                         // do whatever
                     }
@@ -253,7 +298,7 @@ public class MainActivity1 extends AppCompatActivity {
                     @Override public void onLongItemClick(View view, final int position) {
                         // do whatever
 
-                        final AlertDialog.Builder builder1=new AlertDialog.Builder(MainActivity1.this);
+                        final AlertDialog.Builder builder1=new AlertDialog.Builder(HomeActivity.this);
                         builder1.setTitle("Confirm Modification...!!!");
                         builder1.setIcon(R.drawable.ic_delete_forever_black_24dp);
                         builder1.setMessage("Are You Sure to Modify ?");
@@ -261,29 +306,64 @@ public class MainActivity1 extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
 
-                                // Remove the item on remove/button click
-                                list.remove(position);
-                                nameAdapter1.notifyItemRemoved(position);
-                                nameAdapter1.notifyItemRangeChanged(position,list.size());
-                                // Show the removed item label`enter code here`
+//                                // Remove the item on remove/button click
+//                                notesList.remove(position);
+//                                nameAdapter.notifyItemRemoved(position);
+//                                nameAdapter.notifyItemRangeChanged(position,notesList.size());
+//                                // Show the removed item label`enter code here`
+//
+//                                float totalPrice2 = 0;
+//                                int size1 = notesList.size();
+//                                items.setText("Total Items : "+size1);
+//
+//                                for (int i = 0; i<notesList.size(); i++)
+//                                {
+//                                    totalPrice2 += Float.parseFloat(notesList.get(i).getProduct_total_price());
+//
+//                                    grandtotal.setText("Grand Total : "+totalPrice2);
+//                                }
+//                                grandtotal.setText("Grand Total : "+totalPrice2);
+//
+//                                if (notesList.size()==0)
+//                                {
+//                                    textView.setVisibility(View.VISIBLE);
+//                                    floatingActionButton.setEnabled(false);
+//                                }
+//
+
+                                // deleting the note from db
+                                db.deleteNote(notesList.get(position));
+
+                                // removing the note from the list
+                                notesList.remove(position);
+                                nameAdapter.notifyItemRemoved(position);
 
                                 float totalPrice2 = 0;
-                                int size1 = list.size();
-                                items.setText("Total Items : "+size1);
+                                String size1 = (String.valueOf(notesList.size()));
 
-                                for (int i = 0; i<list.size(); i++)
+
+
+
+                                for (int i = 0; i<notesList.size(); i++)
                                 {
-                                    totalPrice2 += Float.parseFloat(list.get(i).getTotalPrice());
+                                    totalPrice2 += Float.parseFloat(notesList.get(i).getProduct_total_price());
+
 
                                     grandtotal.setText("Grand Total : "+totalPrice2);
-                                }
-                                grandtotal.setText("Grand Total : "+totalPrice2);
 
-                                if (list.size()==0)
-                                {
-                                    textView.setVisibility(View.VISIBLE);
-                                    floatingActionButton.setEnabled(false);
+
+
+
                                 }
+
+
+                                String tp= String.valueOf(totalPrice2);
+                                long id= db.insertDetails(size1,tp);
+                                // get the newly inserted note from db
+                                Note n = db.getNote1(id);
+                                grandtotal.setText("Grand Total : "+n.getGrand_total());
+                                items.setText("Total Items : "+n.getSize());
+                                toggleEmptyNotes();
 
                             }
                         });
@@ -299,34 +379,53 @@ public class MainActivity1 extends AppCompatActivity {
                                 // Remove the item on remove/button click
 
 
-                                editTextName.setText(list.get(position).getName());
-                                editTextQuantity.setText(list.get(position).getQuantity());
-                                editTextPrice.setText(list.get(position).getPrice());
-                                editTextTotalPrice.setText(list.get(position).getTotalPrice());
 
-                                list.remove(position);
-                                nameAdapter1.notifyItemRemoved(position);
-                                nameAdapter1.notifyItemRangeChanged(position,list.size());
+                                editTextName.setText(notesList.get(position).getProduct_name());
+                                editTextQuantity.setText(notesList.get(position).getProduct_quantity());
+                                editTextPrice.setText(notesList.get(position).getProduct_price());
+                                editTextTotalPrice.setText(notesList.get(position).getProduct_total_price());
+
+                                updateNote(editTextName.getText().toString(),
+                                        editTextQuantity.getText().toString().trim(),
+                                        editTextPrice.getText().toString(),
+                                        editTextTotalPrice.getText().toString(),
+                                        position);
+
+                              /*  notesList.remove(position);
+                                nameAdapter.notifyItemRemoved(position);
+                                nameAdapter.notifyItemRangeChanged(position,notesList.size());*/
 
                                 // Show the removed item label`enter code here`
 
-                                float totalPrice2 = 0;
-                                int size1 = list.size();
-                                items.setText("Total Items : "+size1);
 
-                                for (int i = 0; i<list.size(); i++)
+                                float totalPrice2 = 0;
+                                String size1 = (String.valueOf(notesList.size()));
+
+
+
+
+                                for (int i = 0; i<notesList.size(); i++)
                                 {
-                                    totalPrice2 += Float.parseFloat(list.get(i).getTotalPrice());
+                                    totalPrice2 += Float.parseFloat(notesList.get(i).getProduct_total_price());
+
 
                                     grandtotal.setText("Grand Total : "+totalPrice2);
-                                }
-                                grandtotal.setText("Grand Total : "+totalPrice2);
 
-                                if (list.size()==0)
-                                {
-                                    textView.setVisibility(View.VISIBLE);
-                                    floatingActionButton.setEnabled(false);
+
+
+
                                 }
+
+
+                                String tp= String.valueOf(totalPrice2);
+                                long id= db.insertDetails(size1,tp);
+                                // get the newly inserted note from db
+                                Note n = db.getNote1(id);
+                                grandtotal.setText("Grand Total : "+n.getGrand_total());
+                                items.setText("Total Items : "+n.getSize());
+                                toggleEmptyNotes();
+
+
                             }
                         });
 
@@ -346,6 +445,8 @@ public class MainActivity1 extends AppCompatActivity {
             public void onClick(View v) {
 
 
+                getRecyclerViewScreenshot(recyclerView);
+
 
                 texttoImage();
 
@@ -357,14 +458,79 @@ public class MainActivity1 extends AppCompatActivity {
 
     }
 
+    private void updateNote( String name, String quantity, String price, String total_price, int position) {
+        Note n = notesList.get(position);
+        // updating note text
+        n.setProduct_name(name);
+        n.setProduct_quantity(quantity);
+        n.setProduct_price(price);
+        n.setProduct_total_price(total_price);
 
+
+        // updating note in db
+        db.updateNote(n);
+
+        // refreshing the list
+        notesList.set(position, n);
+
+        notesList.remove(position);
+
+        nameAdapter.notifyItemRemoved(position);
+        nameAdapter.notifyItemRangeChanged(position,notesList.size());
+        nameAdapter.notifyItemChanged(position);
+
+
+        toggleEmptyNotes();
+    }
+
+    private void toggleEmptyNotes() {
+        // you can check notesList.size() > 0
+
+        if (db.getNotesCount() > 0) {
+            textView.setVisibility(View.GONE);
+            floatingActionButton.setEnabled(true);
+        } else {
+            textView.setVisibility(View.VISIBLE);
+        }
+    }
+    public void getRecyclerViewScreenshot(RecyclerView view) {
+        int size = view.getAdapter().getItemCount();
+        RecyclerView.ViewHolder holder = view.getAdapter().createViewHolder(view, 0);
+        view.getAdapter().onBindViewHolder(holder, 0);
+        holder.itemView.measure(View.MeasureSpec.makeMeasureSpec(view.getWidth(), View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        holder.itemView.layout(0, 0, holder.itemView.getMeasuredWidth(), holder.itemView.getMeasuredHeight());
+        Bitmap bigBitmap = Bitmap.createBitmap(view.getMeasuredWidth(), holder.itemView.getMeasuredHeight() * size,
+                Bitmap.Config.ARGB_8888);
+        Canvas bigCanvas = new Canvas(bigBitmap);
+        bigCanvas.drawColor(Color.WHITE);
+        Paint paint = new Paint();
+        int iHeight = 0;
+        holder.itemView.setDrawingCacheEnabled(true);
+        holder.itemView.buildDrawingCache();
+        bigCanvas.drawBitmap(holder.itemView.getDrawingCache(), 0f, iHeight, paint);
+        holder.itemView.setDrawingCacheEnabled(false);
+        holder.itemView.destroyDrawingCache();
+        iHeight += holder.itemView.getMeasuredHeight();
+        for (int i = 1; i < size; i++) {
+            view.getAdapter().onBindViewHolder(holder, i);
+            holder.itemView.setDrawingCacheEnabled(true);
+            holder.itemView.buildDrawingCache();
+            bigCanvas.drawBitmap(holder.itemView.getDrawingCache(), 0f, iHeight, paint);
+            iHeight += holder.itemView.getMeasuredHeight();
+            holder.itemView.setDrawingCacheEnabled(false);
+            holder.itemView.destroyDrawingCache();
+        }
+        MediaStore.Images.Media.insertImage(getContentResolver(), bigBitmap, "Demo" , "Demo");
+
+    }
     public void texttoImage()
     {
         float totalPrice3 = 0;
-        int size1 = list.size();
-        for (int i = 0; i<list.size(); i++)
+        int size1 = notesList.size();
+        for (int i = 0; i<notesList.size(); i++)
         {
-            totalPrice3 += Float.parseFloat(list.get(i).getTotalPrice());
+            totalPrice3 += Float.parseFloat(notesList.get(i).getProduct_total_price());
 
 
         }
@@ -388,11 +554,11 @@ public class MainActivity1 extends AppCompatActivity {
         BILL = BILL + String.format("%1$10s %2$10s %3$10s %4$10s", "Item","Quantity", "Price","Total");
 
 
-        for (NameDetails1 list1: list){
-            String name =  list1.getName();
-            String qty = list1.getQuantity();
-            String price = list1.getPrice();
-            String totalprice = list1.getTotalPrice();
+        for (Note list1: notesList){
+            String name =  list1.getProduct_name();
+            String qty = list1.getProduct_quantity();
+            String price = list1.getProduct_price();
+            String totalprice = list1.getProduct_total_price();
             /*BILL = BILL + "\n" + String.format("%1$-10s", name);*/
             BILL = BILL + "\n\n" + String.format("%1$10s %2$10s %3$10s %4$10s ",name, qty, price,totalprice);
         }
@@ -459,7 +625,7 @@ public class MainActivity1 extends AppCompatActivity {
         // save bitmap to cache directory
         try {
 
-            File cachePath = new File(MainActivity1.this.getCacheDir(), "images");
+            File cachePath = new File(HomeActivity.this.getCacheDir(), "images");
             cachePath.mkdirs(); // don't forget to make the directory
             FileOutputStream stream = new FileOutputStream(cachePath + "/image.png"); // overwrites this image every time
             bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
@@ -469,9 +635,9 @@ public class MainActivity1 extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        File imagePath = new File(MainActivity1.this.getCacheDir(), "images");
+        File imagePath = new File(HomeActivity.this.getCacheDir(), "images");
         File newFile = new File(imagePath, "image.png");
-        Uri contentUri = FileProvider.getUriForFile(MainActivity1.this, "com.example.myapp.fileprovider", newFile);
+        Uri contentUri = FileProvider.getUriForFile(HomeActivity.this, "com.example.myapp.fileprovider", newFile);
 
         if (contentUri != null) {
             Intent shareIntent = new Intent();

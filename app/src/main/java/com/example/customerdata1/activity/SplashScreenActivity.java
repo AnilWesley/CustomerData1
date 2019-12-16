@@ -1,4 +1,4 @@
-package com.example.customerdata1;
+package com.example.customerdata1.activity;
 
 import android.content.Intent;
 import android.os.Handler;
@@ -6,6 +6,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
+
+import com.example.customerdata1.R;
 
 import java.util.Objects;
 

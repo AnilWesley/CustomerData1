@@ -1,4 +1,4 @@
-package com.example.customerdata1;
+package com.example.customerdata1.activity;
 
 import android.Manifest;
 import android.content.Intent;
@@ -20,6 +20,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
+
+import com.example.customerdata1.R;
 
 import java.util.Objects;
 
@@ -58,7 +60,7 @@ public class DetailsActivity extends AppCompatActivity {
                     Toast.makeText(DetailsActivity.this, "Please Enter Valid Number", Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    Intent intent = new Intent(DetailsActivity.this, MainActivity1.class);
+                    Intent intent = new Intent(DetailsActivity.this, HomeActivity.class);
                     Bundle bundle = new Bundle();
                     bundle.putString("Name", name1);
                     bundle.putString("Number", number1);
@@ -92,7 +94,9 @@ public class DetailsActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 Uri contactData = data.getData();
                 String number1 = "";
+                assert contactData != null;
                 Cursor cursor = getContentResolver().query(contactData, null, null, null, null);
+                assert cursor != null;
                 cursor.moveToFirst();
                 String hasPhone = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Contacts.HAS_PHONE_NUMBER));
                 String contactId = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Contacts._ID));
@@ -102,6 +106,7 @@ public class DetailsActivity extends AppCompatActivity {
                             (ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
                                     ContactsContract.CommonDataKinds.Phone.CONTACT_ID
                                             + " = " + contactId, null, null);
+                    assert phones != null;
                     while (phones.moveToNext()) {
                         number1 = phones.getString(phones.getColumnIndex
                                 (ContactsContract.CommonDataKinds.Phone.NUMBER)).replaceAll("[-() ]", "");

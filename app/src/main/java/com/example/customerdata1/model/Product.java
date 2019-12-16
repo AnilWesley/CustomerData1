@@ -1,14 +1,14 @@
-package com.example.customerdata1;
+package com.example.customerdata1.model;
 
-public class NameDetails1 {
+public class Product {
 
-    String name;
-    String quantity;
-    String price;
-    String totalPrice;
+    private String name;
+    private String quantity;
+    private String price;
+    private String totalPrice;
 
 
-    public NameDetails1(String name, String quantity, String price, String totalPrice) {
+    public Product(String name, String quantity, String price, String totalPrice) {
         this.name = name;
         this.quantity = quantity;
         this.price = price;
@@ -23,7 +23,7 @@ public class NameDetails1 {
         this.totalPrice = totalPrice;
     }
 
-    public NameDetails1() {
+    public Product() {
     }
 
     public String getName() {

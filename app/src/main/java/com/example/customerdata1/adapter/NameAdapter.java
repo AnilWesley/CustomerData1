@@ -1,4 +1,4 @@
-package com.example.customerdata1;
+package com.example.customerdata1.adapter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -9,17 +9,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.customerdata1.R;
+import com.example.customerdata1.model.Product;
+
 import java.util.List;
 
-public class NameAdapter1 extends RecyclerView.Adapter<NameAdapter1.NameHolder>
+public class NameAdapter extends RecyclerView.Adapter<NameAdapter.NameHolder>
 {
 
     private Context context;
-    NameAdapter1 adapter;
-    private List<NameDetails1> list;
+    NameAdapter adapter;
+    private List<Product> list;
     private OnItemClickListener mItemClickListener;
 
-    public NameAdapter1(Context context, List<NameDetails1> list) {
+    public NameAdapter(Context context, List<Product> list) {
         this.context = context;
         this.list = list;
         this.adapter = this; //This is an important line, you need this line to keep track the adapter variable
@@ -54,7 +57,7 @@ public class NameAdapter1 extends RecyclerView.Adapter<NameAdapter1.NameHolder>
     @Override
     public void onBindViewHolder(NameHolder holder, @SuppressLint("RecyclerView") final int position) {
 
-        final NameDetails1 nameDetails1 = list.get(position);
+        final Product nameDetails1 = list.get(position);
         holder.textView.setText("Name : "+ nameDetails1.getName());
         holder.textView1.setText("Quantity : "+ nameDetails1.getQuantity());
         holder.textView2.setText("Price : "+ nameDetails1.getPrice());

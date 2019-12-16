@@ -1,4 +1,4 @@
-package com.example.customerdata1;
+package com.example.customerdata1.activity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -38,6 +38,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.customerdata1.adapter.NameAdapter;
+import com.example.customerdata1.R;
+import com.example.customerdata1.RecyclerItemClickListener;
+import com.example.customerdata1.model.Product;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -54,8 +59,8 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     FileOutputStream outputStream;
 
-    NameAdapter1 nameAdapter1;
-    List<NameDetails1> list;
+    NameAdapter nameAdapter;
+    List<Product> list;
     TextView items,grandtotal;
     FloatingActionButton floatingActionButton;
     TextView textView;
@@ -79,12 +84,12 @@ public class MainActivity extends AppCompatActivity {
         final StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
 
-        list = new ArrayList<NameDetails1>();
-        nameAdapter1 = new NameAdapter1(this,list);
+        list = new ArrayList<Product>();
+        nameAdapter = new NameAdapter(this,list);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),DividerItemDecoration.VERTICAL);
         recyclerView.addItemDecoration(dividerItemDecoration);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(nameAdapter1);
+        recyclerView.setAdapter(nameAdapter);
 
 
         Bundle bundle = getIntent().getExtras();
@@ -111,8 +116,8 @@ public class MainActivity extends AppCompatActivity {
 
                                 // Remove the item on remove/button click
                                 list.remove(position);
-                                nameAdapter1.notifyItemRemoved(position);
-                                nameAdapter1.notifyItemRangeChanged(position,list.size());
+                                nameAdapter.notifyItemRemoved(position);
+                                nameAdapter.notifyItemRangeChanged(position,list.size());
                                 // Show the removed item label`enter code here`
 
                                 float totalPrice2 = 0;
@@ -197,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
         BILL = BILL + String.format("%1$10s %2$10s %3$10s %4$10s", "Item","Quantity", "Price","Total");
 
 
-        for (NameDetails1 list1: list){
+        for (Product list1: list){
             String name =  list1.getName();
             String qty = list1.getQuantity();
             String price = list1.getPrice();
@@ -423,7 +428,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                     }else {
-                        NameDetails1 nameDetails1 = new NameDetails1(name, quantity,price2, price);
+                        Product nameDetails1 = new Product(name, quantity,price2, price);
                         list.add(nameDetails1);
                     }
 
