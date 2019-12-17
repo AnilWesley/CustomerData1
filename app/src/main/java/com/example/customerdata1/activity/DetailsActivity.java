@@ -60,7 +60,7 @@ public class DetailsActivity extends AppCompatActivity {
                     Toast.makeText(DetailsActivity.this, "Please Enter Valid Number", Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    Intent intent = new Intent(DetailsActivity.this, HomeActivity.class);
+                    Intent intent = new Intent(DetailsActivity.this, MainActivity1.class);
                     Bundle bundle = new Bundle();
                     bundle.putString("Name", name1);
                     bundle.putString("Number", number1);
