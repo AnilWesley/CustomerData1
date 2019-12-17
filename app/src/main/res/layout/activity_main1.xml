@@ -105,6 +105,7 @@
             android:layout_height="match_parent"
             android:layout_margin="5dp"
             android:scrollbars="none"
+            android:nestedScrollingEnabled="false"
             android:id="@+id/recycle" />
         <TextView
             android:id="@+id/empty_record_text"

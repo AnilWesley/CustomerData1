@@ -54,9 +54,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public class MainActivity1 extends AppCompatActivity {
+public class MainActivity1 extends AppCompatActivity implements NameAdapter.OnItemClickListener {
 
-
+    NameAdapter.OnItemClickListener onItemClickListener;
     RecyclerView recyclerView;
     FileOutputStream outputStream;
 
@@ -67,7 +67,7 @@ public class MainActivity1 extends AppCompatActivity {
     TextView textView;
     String Name,Number;
     Button addData;
-
+    EditText editTextName,editTextPrice,editTextTotalPrice,editTextQuantity;
 
 
     @Override
@@ -75,7 +75,7 @@ public class MainActivity1 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main1);
 
-
+        onItemClickListener = (NameAdapter.OnItemClickListener)this;
         recyclerView = (RecyclerView) findViewById(R.id.recycle);
         textView = (TextView)findViewById(R.id.empty_record_text);
         items =(TextView)findViewById(R.id.text_quantity1);
@@ -96,18 +96,18 @@ public class MainActivity1 extends AppCompatActivity {
         list = new ArrayList<Product>();
 
 
-        nameAdapter = new NameAdapter(this, list);
+        nameAdapter = new NameAdapter(this, list,onItemClickListener);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),DividerItemDecoration.VERTICAL);
         recyclerView.addItemDecoration(dividerItemDecoration);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(nameAdapter);
-        nameAdapter.SetOnItemClickListener(new NameAdapter.OnItemClickListener() {
+       /* nameAdapter.SetOnItemClickListener(new NameAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
 
                 Toast.makeText(MainActivity1.this, ""+position, Toast.LENGTH_SHORT).show();
             }
-        });
+        });*/
 
 
         Bundle bundle = getIntent().getExtras();
@@ -117,10 +117,10 @@ public class MainActivity1 extends AppCompatActivity {
          Number = bundle.getString("Number");
 
 
-        final EditText editTextName = (EditText) findViewById(R.id.edit_name);
-        final EditText editTextPrice = (EditText) findViewById(R.id.edit_price);
-        final EditText editTextTotalPrice = (EditText) findViewById(R.id.edit_total_price);
-        final EditText editTextQuantity = (EditText) findViewById(R.id.edit_quantity);
+          editTextName = (EditText) findViewById(R.id.edit_name);
+          editTextPrice = (EditText) findViewById(R.id.edit_price);
+          editTextTotalPrice = (EditText) findViewById(R.id.edit_total_price);
+          editTextQuantity = (EditText) findViewById(R.id.edit_quantity);
 
 
 
@@ -205,7 +205,7 @@ public class MainActivity1 extends AppCompatActivity {
 
 
                 }else {
-                    Product nameDetails1 = new Product(name, quantity,price2, price);
+                    Product nameDetails1 = new Product(name, quantity,price2, price,false);
                     list.add(nameDetails1);
 
                     nameAdapter.notifyDataSetChanged();
@@ -424,16 +424,22 @@ public class MainActivity1 extends AppCompatActivity {
         BILL = BILL + "----------------------------------------------------------------------\n";
         /*BILL = BILL + String.format("%1$-10s" , "Name");
         BILL = BILL + "\n";*/
-        BILL = BILL + String.format("%1$10s %2$10s %3$10s %4$10s", "Item","Quantity", "Price","Total");
+        BILL = BILL + String.format("%1$10s %2$10s %3$10s %4$10s  %5$10s", "Item","Quantity", "Price","Total","Selected");
 
 
-        for (Product list1: list){
-            String name =  list1.getName();
+        for (Product list1: list) {
+            String name = list1.getName();
             String qty = list1.getQuantity();
             String price = list1.getPrice();
             String totalprice = list1.getTotalPrice();
-            /*BILL = BILL + "\n" + String.format("%1$-10s", name);*/
-            BILL = BILL + "\n\n" + String.format("%1$10s %2$10s %3$10s %4$10s ",name, qty, price,totalprice);
+            Boolean checked = list1.isSelected();
+            if (checked) {
+                BILL = BILL + "\n\n" + String.format("%1$10s %2$10s %3$10s %4$10s %5$10s", name, qty, price, totalprice, "\u2713");
+
+            } else {
+                /*BILL = BILL + "\n" + String.format("%1$-10s", name);*/
+                BILL = BILL + "\n\n" + String.format("%1$10s %2$10s %3$10s %4$10s %5$10s", name, qty, price, totalprice, "");
+            }
         }
 
         BILL = BILL + "\n----------------------------------------------------------------------";
@@ -554,4 +560,85 @@ public class MainActivity1 extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onItemClick(View view, final int position) {
+        final AlertDialog.Builder builder1=new AlertDialog.Builder(MainActivity1.this);
+        builder1.setTitle("Confirm Modification...!!!");
+        builder1.setIcon(R.drawable.ic_delete_forever_black_24dp);
+        builder1.setMessage("Are You Sure to Modify ?");
+        builder1.setPositiveButton("DELETE", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                // Remove the item on remove/button click
+                list.remove(position);
+                nameAdapter.notifyItemRemoved(position);
+                nameAdapter.notifyItemRangeChanged(position,list.size());
+                // Show the removed item label`enter code here`
+
+                float totalPrice2 = 0;
+                int size1 = list.size();
+                items.setText("Total Items : "+size1);
+
+                for (int i = 0; i<list.size(); i++)
+                {
+                    totalPrice2 += Float.parseFloat(list.get(i).getTotalPrice());
+
+                    grandtotal.setText("Grand Total : "+totalPrice2);
+                }
+                grandtotal.setText("Grand Total : "+totalPrice2);
+
+                if (list.size()==0)
+                {
+                    textView.setVisibility(View.VISIBLE);
+                    floatingActionButton.setEnabled(false);
+                }
+
+            }
+        });
+        builder1.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        builder1.setNeutralButton("UPDATE", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Remove the item on remove/button click
+
+
+                editTextName.setText(list.get(position).getName());
+                editTextQuantity.setText(list.get(position).getQuantity());
+                editTextPrice.setText(list.get(position).getPrice());
+                editTextTotalPrice.setText(list.get(position).getTotalPrice());
+
+                list.remove(position);
+                nameAdapter.notifyItemRemoved(position);
+                nameAdapter.notifyItemRangeChanged(position,list.size());
+
+                // Show the removed item label`enter code here`
+
+                float totalPrice2 = 0;
+                int size1 = list.size();
+                items.setText("Total Items : "+size1);
+
+                for (int i = 0; i<list.size(); i++)
+                {
+                    totalPrice2 += Float.parseFloat(list.get(i).getTotalPrice());
+
+                    grandtotal.setText("Grand Total : "+totalPrice2);
+                }
+                grandtotal.setText("Grand Total : "+totalPrice2);
+
+                if (list.size()==0)
+                {
+                    textView.setVisibility(View.VISIBLE);
+                    floatingActionButton.setEnabled(false);
+                }
+            }
+        });
+
+        builder1.show();
+    }
 }

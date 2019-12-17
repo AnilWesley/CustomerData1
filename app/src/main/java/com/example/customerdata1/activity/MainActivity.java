@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.setVmPolicy(builder.build());
 
         list = new ArrayList<Product>();
-        nameAdapter = new NameAdapter(this,list);
+        nameAdapter = new NameAdapter(this,list,null);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),DividerItemDecoration.VERTICAL);
         recyclerView.addItemDecoration(dividerItemDecoration);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
         BILL = BILL + "----------------------------------------------------------------------\n";
         /*BILL = BILL + String.format("%1$-10s" , "Name");
         BILL = BILL + "\n";*/
-        BILL = BILL + String.format("%1$10s %2$10s %3$10s %4$10s", "Item","Quantity", "Price","Total");
+        BILL = BILL + String.format("%1$10s %2$10s %3$10s %4$10s %5$10s", "Item","Quantity", "Price","Total","Selected");
 
 
         for (Product list1: list){
@@ -207,8 +207,9 @@ public class MainActivity extends AppCompatActivity {
             String qty = list1.getQuantity();
             String price = list1.getPrice();
             String totalprice = list1.getTotalPrice();
+            Boolean checked = list1.isSelected();
             /*BILL = BILL + "\n" + String.format("%1$-10s", name);*/
-            BILL = BILL + "\n\n" + String.format("%1$10s %2$10s %3$10s %4$10s ",name, qty, price,totalprice);
+            BILL = BILL + "\n\n" + String.format("%1$10s %2$10s %3$10s %4$10s %5$10s",name, qty, price,totalprice,checked);
         }
 
         BILL = BILL + "\n----------------------------------------------------------------------";
@@ -428,7 +429,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                     }else {
-                        Product nameDetails1 = new Product(name, quantity,price2, price);
+                        Product nameDetails1 = new Product(name, quantity,price2, price,false);
                         list.add(nameDetails1);
                     }
 
