@@ -75,8 +75,7 @@ public class NameAdapter extends RecyclerView.Adapter<NameAdapter.NameHolder>
                 contact.setSelected(cb.isChecked());
                 list.get(position).setSelected(cb.isChecked());
 
-               /* Toast.makeText(v.getContext(), "Clicked on Checkbox: " + cb.getText() + " is "
-                                + cb.isChecked(), Toast.LENGTH_LONG).show();*/
+
             }
         });
         holder.linear2.setOnLongClickListener(new View.OnLongClickListener() {

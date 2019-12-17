@@ -101,13 +101,7 @@ public class MainActivity1 extends AppCompatActivity implements NameAdapter.OnIt
         recyclerView.addItemDecoration(dividerItemDecoration);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(nameAdapter);
-       /* nameAdapter.SetOnItemClickListener(new NameAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
 
-                Toast.makeText(MainActivity1.this, ""+position, Toast.LENGTH_SHORT).show();
-            }
-        });*/
 
 
         Bundle bundle = getIntent().getExtras();
@@ -352,9 +346,6 @@ public class MainActivity1 extends AppCompatActivity implements NameAdapter.OnIt
             public void onClick(View v) {
 
 
-                //getRecyclerViewScreenshot(recyclerView);
-
-
                 texttoImage();
 
             }
@@ -366,37 +357,6 @@ public class MainActivity1 extends AppCompatActivity implements NameAdapter.OnIt
     }
 
 
-    public void getRecyclerViewScreenshot(RecyclerView view) {
-        int size = view.getAdapter().getItemCount();
-        RecyclerView.ViewHolder holder = view.getAdapter().createViewHolder(view, 0);
-        view.getAdapter().onBindViewHolder(holder, 0);
-        holder.itemView.measure(View.MeasureSpec.makeMeasureSpec(view.getWidth(), View.MeasureSpec.EXACTLY),
-                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-        holder.itemView.layout(0, 0, holder.itemView.getMeasuredWidth(), holder.itemView.getMeasuredHeight());
-        Bitmap bigBitmap = Bitmap.createBitmap(view.getMeasuredWidth(), holder.itemView.getMeasuredHeight() * size,
-                Bitmap.Config.ARGB_8888);
-        Canvas bigCanvas = new Canvas(bigBitmap);
-        bigCanvas.drawColor(Color.WHITE);
-        Paint paint = new Paint();
-        int iHeight = 0;
-        holder.itemView.setDrawingCacheEnabled(true);
-        holder.itemView.buildDrawingCache();
-        bigCanvas.drawBitmap(holder.itemView.getDrawingCache(), 0f, iHeight, paint);
-        holder.itemView.setDrawingCacheEnabled(false);
-        holder.itemView.destroyDrawingCache();
-        iHeight += holder.itemView.getMeasuredHeight();
-        for (int i = 1; i < size; i++) {
-            view.getAdapter().onBindViewHolder(holder, i);
-            holder.itemView.setDrawingCacheEnabled(true);
-            holder.itemView.buildDrawingCache();
-            bigCanvas.drawBitmap(holder.itemView.getDrawingCache(), 0f, iHeight, paint);
-            iHeight += holder.itemView.getMeasuredHeight();
-            holder.itemView.setDrawingCacheEnabled(false);
-            holder.itemView.destroyDrawingCache();
-        }
-        MediaStore.Images.Media.insertImage(getContentResolver(), bigBitmap, "Demo" , "Demo");
-
-    }
     public void texttoImage()
     {
         float totalPrice3 = 0;
@@ -421,7 +381,7 @@ public class MainActivity1 extends AppCompatActivity implements NameAdapter.OnIt
                 "   Number : "+Number+"\t\t"+"Time : "+currentTime+"\n\n"+
                 "   * ";
 
-        BILL = BILL + "----------------------------------------------------------------------\n";
+        BILL = BILL + "--------------------------------------------------------------------------------\n";
         /*BILL = BILL + String.format("%1$-10s" , "Name");
         BILL = BILL + "\n";*/
         BILL = BILL + String.format("%1$10s %2$10s %3$10s %4$10s  %5$10s", "Item","Quantity", "Price","Total","Selected");
@@ -432,7 +392,7 @@ public class MainActivity1 extends AppCompatActivity implements NameAdapter.OnIt
             String qty = list1.getQuantity();
             String price = list1.getPrice();
             String totalprice = list1.getTotalPrice();
-            Boolean checked = list1.isSelected();
+            boolean checked = list1.isSelected();
             if (checked) {
                 BILL = BILL + "\n\n" + String.format("%1$10s %2$10s %3$10s %4$10s %5$10s", name, qty, price, totalprice, "\u2713");
 
@@ -442,7 +402,7 @@ public class MainActivity1 extends AppCompatActivity implements NameAdapter.OnIt
             }
         }
 
-        BILL = BILL + "\n----------------------------------------------------------------------";
+        BILL = BILL + "\n--------------------------------------------------------------------------------";
 
         BILL = BILL + "\n\n";
         BILL = BILL + "   Total Items : " + " " + size1  + "\n\n";
