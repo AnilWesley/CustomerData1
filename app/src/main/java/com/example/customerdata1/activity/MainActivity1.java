@@ -378,8 +378,7 @@ public class MainActivity1 extends AppCompatActivity implements NameAdapter.OnIt
 
         BILL =  "\n"+
                 "   Name : "+Name+"\t\t"+"Date : "+currentDate+"\n\n" +
-                "   Number : "+Number+"\t\t"+"Time : "+currentTime+"\n\n"+
-                "   * ";
+                "   Number : "+Number+"\t\t"+"Time : "+currentTime+"\n";
 
         BILL = BILL + "--------------------------------------------------------------------------------\n";
         /*BILL = BILL + String.format("%1$-10s" , "Name");
